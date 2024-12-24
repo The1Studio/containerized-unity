@@ -2,4 +2,9 @@ ARG editorImage="trieudinhquang2002/unity-editor"
 
 FROM $editorImage
 
-ENTRYPOINT [ "/bin/bash" ]
+WORKDIR /
+
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

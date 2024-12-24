@@ -1,4 +1,6 @@
-FROM trieudinhquang2002/unity-base:latest
+ARG baseImage="trieudinhquang2002/unity-base"
+
+FROM $baseImage
 ARG hubVersion="3.7.0"
 
 # Hub dependencies
