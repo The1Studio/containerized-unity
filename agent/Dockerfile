@@ -1,10 +1,14 @@
-ARG editorImage="trieudinhquang2002/unity-editor"
-
-FROM $editorImage
+FROM alpine:latest
 
 WORKDIR /
 
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+RUN apk update --no-cache && \
+    apk upgrade --no-cache && \
+    apk add --no-cache git openjdk17 curl docker openrc openssh-client
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN rc-update add docker boot
+
+COPY *.sh /
+COPY BlankProject/ /BlankProject/
+
+ENTRYPOINT [ "/bin/sh", "/entrypoint.sh" ]
