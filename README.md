@@ -2,7 +2,7 @@
 
 ## Enduser instruction
 
-Pull and run container: `trieudinhquang2002/unity-agent:latest`
+Pull and run container: `unitydocker/unity-agent:latest`
 
 ## Following this instruction to build and run an agent
 
@@ -11,7 +11,7 @@ Pull and run container: `trieudinhquang2002/unity-agent:latest`
 **Build base image**
 
 ```sh
-docker build -t trieudinhquang2002/unity-base .\base\
+docker build -t unitydocker/unity-base .\base\
 ```
 
 ### 2. HUB
@@ -19,7 +19,7 @@ docker build -t trieudinhquang2002/unity-base .\base\
 **Build hub image**
 
 ```sh
-docker build -t trieudinhquang2002/unity-hub .\hub\
+docker build -t unitydocker/unity-hub .\hub\
 ```
 
 **Build args**
@@ -31,7 +31,7 @@ docker build -t trieudinhquang2002/unity-hub .\hub\
 **Build editor image**
 
 ```sh
-docker build -t trieudinhquang2002/unity-editor --build-arg module="android webgl" --build-arg version=6000.0.29f1 --build-arg changeSet=9fafe5c9db65 .\editor\
+docker build -t unitydocker/unity-editor --build-arg module="android webgl" --build-arg version=6000.0.48f1 --build-arg changeSet=170d2541580d .\editor\
 ```
 
 **Build args**
@@ -45,13 +45,13 @@ docker build -t trieudinhquang2002/unity-editor --build-arg module="android webg
 **Build agent image**
 
 ```sh
-docker build -t trieudinhquang2002/unity-jenkins-agent .\agent\
+docker build -t unitydocker/unity-jenkins-agent .\agent\
 ```
 
 **Run agent container**
 
 ```sh
-docker run --rm -it --env "JENKINS_HOST=???" --env "JENKINS_WORKDIR=???" --env "JENKINS_SECRET=???" --env "JENKINS_NAME=???" trieudinhquang2002/unity-jenkins-agent
+docker run --rm -it --env "JENKINS_HOST=???" --env "JENKINS_WORKDIR=???" --env "JENKINS_SECRET=???" --env "JENKINS_NAME=???" unitydocker/unity-jenkins-agent
 ```
 
 ## **Container env**

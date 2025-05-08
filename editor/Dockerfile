@@ -1,5 +1,5 @@
-ARG hubImage="trieudinhquang2002/unity-hub"
-ARG baseImage="trieudinhquang2002/unity-base"
+ARG hubImage="unitydocker/unity-hub"
+ARG baseImage="unitydocker/unity-base"
 
 ###########################
 #         Builder         #
@@ -32,6 +32,14 @@ RUN echo "$version-$module" | grep -q -vP '^(2021.2.(?![0-4](?![0-9]))|2021.[3-9
     && exit 0 \
     || unity-hub install-modules --version "$version" --module "windows-server" --childModules | tee /var/log/install-module-windows-server.log && grep 'Missing module' /var/log/install-module-windows-server.log | exit $(wc -l);
 
+# Clean up unnecessary files to reduce image size
+RUN rm -rf /var/log/install-*.log \
+    && rm -rf /root/.cache /root/.local /tmp/* /var/tmp/* \
+    && find /opt/unity/editors/$version/ -name '*.pdb' -delete \
+    && find /opt/unity/editors/$version/ -name '*.mdb' -delete \
+    && find /opt/unity/editors/$version/ -name '*.a' -delete \
+    && find /opt/unity/editors/$version/ -name '*.lib' -delete
+
 ###########################
 #          Editor         #
 ###########################
@@ -46,6 +54,8 @@ COPY --from=builder /opt/unity/editors/$version/ "$UNITY_PATH/"
 # Add a file containing the version for this build
 RUN echo $version > "$UNITY_PATH/version"
 
+# Clean up apt cache and temp files in the final image
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ###########################
 #  Alias to unity-editor  #

@@ -1,4 +1,4 @@
-ARG baseImage="trieudinhquang2002/unity-base"
+ARG baseImage="unitydocker/unity-base"
 
 FROM $baseImage
 ARG hubVersion="3.7.0"
