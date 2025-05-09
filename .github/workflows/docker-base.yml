@@ -27,13 +27,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set repository name to lowercase
+        id: repo_name
+        run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build and push base image
         uses: docker/build-push-action@v5
         with:
           context: ./base
           file: ./base/Dockerfile
-          # If you want to support multiple Ubuntu versions, you can add an ARG in your Dockerfile and pass it here
           tags: |
-            ghcr.io/${{ github.repository }}/unity-base:${{ github.event.inputs.ubuntu_version }}
+            ghcr.io/${{ steps.repo_name.outputs.repo }}/unity-base:${{ github.event.inputs.ubuntu_version }}
           push: true
 # After this workflow completes, the base image will be available as ghcr.io/OWNER/REPO/unity-base:22.04 (or your chosen version)
