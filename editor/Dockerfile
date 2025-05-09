@@ -51,6 +51,17 @@ ARG version
 ARG module
 COPY --from=builder /opt/unity/editors/$version/ "$UNITY_PATH/"
 
+# Copy build and license scripts from editor directory
+COPY build.sh /build.sh
+COPY active_lic.sh /active_lic.sh
+COPY return_lic.sh /return_lic.sh
+
+# Convert scripts to Unix line endings and make them executable
+RUN apt-get update && apt-get install -y dos2unix && \
+    dos2unix /build.sh /active_lic.sh /return_lic.sh && \
+    chmod +x /build.sh /active_lic.sh /return_lic.sh && \
+    apt-get remove -y dos2unix && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Add a file containing the version for this build
 RUN echo $version > "$UNITY_PATH/version"
 
@@ -331,3 +342,5 @@ RUN echo "$version-$module" | grep -q -v '^2021.*linux-il2cpp' \
     lld \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/bin/bash", "/build.sh"]

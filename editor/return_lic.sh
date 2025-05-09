@@ -10,7 +10,7 @@ unity-editor \
     -returnlicense \
     -username "$UNITY_EMAIL" \
     -password "$UNITY_PASSWORD" \
-    -projectPath /jenkins/BlankProject
+    -projectPath /home/jenkins/BlankProject
 
 # Store the exit code from the verify command
 UNITY_EXIT_CODE=$?
