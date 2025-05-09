@@ -1,0 +1,61 @@
+name: Build & Push Unity Editor
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: 'Base image tag (e.g., 22.04)'
+        required: true
+        default: '22.04'
+      hub_version:
+        description: 'Unity Hub version (e.g., 3.7.0)'
+        required: true
+        default: '3.7.0'
+      editor_version:
+        description: 'Unity Editor version (e.g., 6000.0.48f1)'
+        required: true
+        default: '6000.0.48f1'
+      editor_changeset:
+        description: 'Unity Editor changeset (e.g., 170d2541580d)'
+        required: true
+        default: '170d2541580d'
+      editor_modules:
+        description: 'Unity Editor modules (space separated, e.g., android webgl)'
+        required: true
+        default: 'android webgl'
+
+jobs:
+  build-editor:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push editor image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./editor
+          file: ./editor/Dockerfile
+          build-args: |
+            baseImage=ghcr.io/${{ github.repository }}/unity-base:${{ github.event.inputs.base_tag }}
+            hubImage=ghcr.io/${{ github.repository }}/unity-hub:${{ github.event.inputs.hub_version }}-ubuntu${{ github.event.inputs.base_tag }}
+            version=${{ github.event.inputs.editor_version }}
+            changeSet=${{ github.event.inputs.editor_changeset }}
+            module=${{ github.event.inputs.editor_modules }}
+          tags: |
+            ghcr.io/${{ github.repository }}/unity-editor:${{ github.event.inputs.editor_version }}
+          push: true
+# After this workflow completes, the editor image will be available as ghcr.io/OWNER/REPO/unity-editor:EDITORVERSION
+# Make sure the base and hub images exist before running this workflow.
