@@ -23,10 +23,14 @@ on:
         description: 'Unity Editor modules (space separated, e.g., android webgl)'
         required: true
         default: 'android webgl'
+      architecture:
+        description: 'Target architecture for Unity Editor (x86_64 or arm64)'
+        required: true
+        default: 'x86_64'
 
 jobs:
   build-editor:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
     steps:
@@ -56,6 +60,7 @@ jobs:
             version=${{ github.event.inputs.editor_version }}
             changeSet=${{ github.event.inputs.editor_changeset }}
             module=${{ github.event.inputs.editor_modules }}
+            ARCHITECTURE=${{ github.event.inputs.architecture }}
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}
           push: true
@@ -66,7 +71,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           payload='{
-            "content": "<@&ROLE_ID>\nBuild completed for Unity Editor Docker image!\n\n**Build Status:** Success\n**Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}\n**Base Tag:** ${{ github.event.inputs.base_tag }}\n**Hub Version:** ${{ github.event.inputs.hub_version }}\n**Unity Version:** ${{ github.event.inputs.editor_version }}\n**Editor Changeset:** ${{ github.event.inputs.editor_changeset }}\n**Editor Modules:** ${{ github.event.inputs.editor_modules }}\n**Workflow:** ${{ github.workflow }}\n**Run Number:** ${{ github.run_number }}\n**Commit:** ${{ github.sha }}\n**Triggered By:** ${{ github.actor }}"
+            "content": "<@&961819174282350683>\nBuild completed for Unity Editor Docker image!\n\n**Build Status:** Success\n**Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}\n**Base Tag:** ${{ github.event.inputs.base_tag }}\n**Hub Version:** ${{ github.event.inputs.hub_version }}\n**Unity Version:** ${{ github.event.inputs.editor_version }}\n**Editor Changeset:** ${{ github.event.inputs.editor_changeset }}\n**Editor Modules:** ${{ github.event.inputs.editor_modules }}\n**Workflow:** ${{ github.workflow }}\n**Run Number:** ${{ github.run_number }}\n**Commit:** ${{ github.sha }}\n**Triggered By:** ${{ github.actor }}"
           }'
           curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
 # Replace <@&ROLE_ID> with your Discord role ID to tag the role.

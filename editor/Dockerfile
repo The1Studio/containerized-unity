@@ -10,7 +10,8 @@ FROM $hubImage AS builder
 # Install editor
 ARG version
 ARG changeSet
-RUN unity-hub install --version "$version" --changeset "$changeSet" | tee /var/log/install-editor.log && grep 'Failed to install\|Error while installing an editor\|Completed with errors' /var/log/install-editor.log | exit $(wc -l)
+ARG ARCHITECTURE="x86_64"
+RUN unity-hub install --version "$version" --changeset "$changeSet" --architecture "$ARCHITECTURE" | tee /var/log/install-editor.log && grep 'Failed to install\|Error while installing an editor\|Completed with errors' /var/log/install-editor.log | exit $(wc -l)
 
 # Install modules for that editor
 ARG module="non-existent-module"
@@ -76,7 +77,7 @@ RUN /bin/echo -e '#!/bin/bash\n\
     \n\
     if [ -d /usr/bin/unity-editor.d ] ; then\n\
     for i in /usr/bin/unity-editor.d/*.sh; do\n\
-    if [ -r $i ]; then\n\
+    if [ -r $i]; then\n\
     . $i\n\
     fi\n\
     done\n\
