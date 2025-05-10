@@ -70,10 +70,10 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          payload='{
+          $payload = '{
             "content": "<@&961819174282350683>\nBuild completed for Unity Editor Docker image!\n\n**Build Status:** Success\n**Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}\n**Base Tag:** ${{ github.event.inputs.base_tag }}\n**Hub Version:** ${{ github.event.inputs.hub_version }}\n**Unity Version:** ${{ github.event.inputs.editor_version }}\n**Editor Changeset:** ${{ github.event.inputs.editor_changeset }}\n**Editor Modules:** ${{ github.event.inputs.editor_modules }}\n**Workflow:** ${{ github.workflow }}\n**Run Number:** ${{ github.run_number }}\n**Commit:** ${{ github.sha }}\n**Triggered By:** ${{ github.actor }}"
           }'
-          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$env:DISCORD_WEBHOOK"
 # Replace <@&ROLE_ID> with your Discord role ID to tag the role.
 # Make sure to add DISCORD_WEBHOOK as a secret in your repository.
 # After this workflow completes, the editor image will be available as docker.io/USERNAME/containerized-unity-editor:EDITORVERSION
