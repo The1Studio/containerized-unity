@@ -11,7 +11,8 @@ FROM $hubImage AS builder
 ARG version
 ARG changeSet
 ARG ARCHITECTURE="x86_64"
-RUN unity-hub install --version "$version" --changeset "$changeSet" --architecture "$ARCHITECTURE" | tee /var/log/install-editor.log && grep 'Failed to install\|Error while installing an editor\|Completed with errors' /var/log/install-editor.log | exit $(wc -l)
+RUN unity-hub install --version "$version" --changeset "$changeSet" --architecture "$ARCHITECTURE" | tee /var/log/install-editor.log \
+    && grep 'Failed to install\|Error while installing an editor\|Completed with errors' /var/log/install-editor.log && exit 1 || true
 
 # Install modules for that editor
 ARG module="non-existent-module"
@@ -19,7 +20,8 @@ RUN for mod in $module; do \
     if [ "$mod" = "base" ] ; then \
     echo "running default modules for this baseOs"; \
     else \
-    unity-hub install-modules --version "$version" --module "$mod" --childModules | tee /var/log/install-module-${mod}.log && grep 'Missing module\|Completed with errors' /var/log/install-module-${mod}.log | exit $(wc -l); \
+    unity-hub install-modules --version "$version" --module "$mod" --childModules | tee /var/log/install-module-${mod}.log; \
+    grep 'Missing module\|Completed with errors' /var/log/install-module-${mod}.log && exit 1 || true; \
     fi \
     done \
     # Set execute permissions for modules
@@ -27,11 +29,13 @@ RUN for mod in $module; do \
 
 RUN echo "$version-$module" | grep -q -vP '^(2021.2.(?![0-4](?![0-9]))|2021.[3-9]|202[2-9]|[6-9][0-9]{3}|[1-9][0-9]{4,}).*linux' \
     && exit 0 \
-    || unity-hub install-modules --version "$version" --module "linux-server" --childModules | tee /var/log/install-module-linux-server.log && grep 'Missing module' /var/log/install-module-linux-server.log | exit $(wc -l);
+    || unity-hub install-modules --version "$version" --module "linux-server" --childModules | tee /var/log/install-module-linux-server.log; \
+    grep 'Missing module' /var/log/install-module-linux-server.log && exit 1 || true
 
 RUN echo "$version-$module" | grep -q -vP '^(2021.2.(?![0-4](?![0-9]))|2021.[3-9]|202[2-9]|[6-9][0-9]{3}|[1-9][0-9]{4,}).*windows' \
     && exit 0 \
-    || unity-hub install-modules --version "$version" --module "windows-server" --childModules | tee /var/log/install-module-windows-server.log && grep 'Missing module' /var/log/install-module-windows-server.log | exit $(wc -l);
+    || unity-hub install-modules --version "$version" --module "windows-server" --childModules | tee /var/log/install-module-windows-server.log; \
+    grep 'Missing module' /var/log/install-module-windows-server.log && exit 1 || true
 
 # Clean up unnecessary files to reduce image size
 RUN rm -rf /var/log/install-*.log \
