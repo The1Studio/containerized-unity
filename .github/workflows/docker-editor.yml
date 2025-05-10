@@ -70,10 +70,29 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          $payload = '{
-            "content": "<@&961819174282350683>\nBuild completed for Unity Editor Docker image!\n\n**Build Status:** Success\n**Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}\n**Base Tag:** ${{ github.event.inputs.base_tag }}\n**Hub Version:** ${{ github.event.inputs.hub_version }}\n**Unity Version:** ${{ github.event.inputs.editor_version }}\n**Editor Changeset:** ${{ github.event.inputs.editor_changeset }}\n**Editor Modules:** ${{ github.event.inputs.editor_modules }}\n**Workflow:** ${{ github.workflow }}\n**Run Number:** ${{ github.run_number }}\n**Commit:** ${{ github.sha }}\n**Triggered By:** ${{ github.actor }}"
-          }'
-          curl -H "Content-Type: application/json" -X POST -d "$payload" "$env:DISCORD_WEBHOOK"
+          $embed = @{
+            title = "Build completed for Unity Editor Docker image!"
+            color = 3066993
+            description = "Build and push completed for Unity Editor Docker image."
+            fields = @(
+              @{ name = "Build Status"; value = "Success"; inline = $false },
+              @{ name = "Image"; value = "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}"; inline = $false },
+              @{ name = "Base Tag"; value = "${{ github.event.inputs.base_tag }}"; inline = $true },
+              @{ name = "Hub Version"; value = "${{ github.event.inputs.hub_version }}"; inline = $true },
+              @{ name = "Unity Version"; value = "${{ github.event.inputs.editor_version }}"; inline = $true },
+              @{ name = "Editor Changeset"; value = "${{ github.event.inputs.editor_changeset }}"; inline = $false },
+              @{ name = "Editor Modules"; value = "${{ github.event.inputs.editor_modules }}"; inline = $false },
+              @{ name = "Workflow"; value = "${{ github.workflow }}"; inline = $true },
+              @{ name = "Run Number"; value = "${{ github.run_number }}"; inline = $true },
+              @{ name = "Commit"; value = "${{ github.sha }}"; inline = $false },
+              @{ name = "Triggered By"; value = "${{ github.actor }}"; inline = $true }
+            )
+          }
+          $payload = @{
+            content = '<@&961819174282350683>'
+            embeds = @($embed)
+          } | ConvertTo-Json -Depth 4
+          Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -Body $payload -ContentType 'application/json'
 # Replace <@&ROLE_ID> with your Discord role ID to tag the role.
 # Make sure to add DISCORD_WEBHOOK as a secret in your repository.
 # After this workflow completes, the editor image will be available as docker.io/USERNAME/containerized-unity-editor:EDITORVERSION
