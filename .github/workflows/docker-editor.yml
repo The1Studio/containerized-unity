@@ -62,7 +62,7 @@ jobs:
             module=${{ github.event.inputs.editor_modules }}
             ARCHITECTURE=${{ github.event.inputs.architecture }}
           tags: |
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
           push: true
 
       - name: Notify Discord
