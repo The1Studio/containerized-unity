@@ -66,22 +66,47 @@ jobs:
           push: true
 
       - name: Notify Discord
-        if: success()
+        if: always()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
+          if [ "$GITHUB_JOB" = "build-editor" ]; then
+            if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
+              status="Retried"
+            elif [ "$GITHUB_RUN_NUMBER" -gt 1 ]; then
+              status="Retried"
+            elif [ "$GITHUB_RUN_ATTEMPT" -eq 1 ]; then
+              status="Success"
+            else
+              status="Success"
+            fi
+          else
+            status="Failed"
+          fi
+          if [ "${{ job.status }}" = "success" ]; then
+            status="Success"
+          elif [ "${{ job.status }}" = "failure" ]; then
+            status="Failed"
+          elif [ "${{ job.status }}" = "cancelled" ]; then
+            status="Cancelled"
+          else
+            status="${{ job.status }}"
+          fi
+          $tag = "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"
           $embed = @{
             title = "Build completed for Unity Editor Docker image!"
-            color = 3066993
+            color = if ($status -eq "Success") { 3066993 } elseif ($status -eq "Failed") { 15158332 } else { 15844367 }
             description = "Build and push completed for Unity Editor Docker image."
             fields = @(
-              @{ name = "Build Status"; value = "Success"; inline = $false },
-              @{ name = "Image"; value = "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}"; inline = $false },
+              @{ name = "Build Status"; value = $status; inline = $false },
+              @{ name = "Image"; value = $tag; inline = $false },
+              @{ name = "Tag"; value = "${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"; inline = $true },
               @{ name = "Base Tag"; value = "${{ github.event.inputs.base_tag }}"; inline = $true },
               @{ name = "Hub Version"; value = "${{ github.event.inputs.hub_version }}"; inline = $true },
               @{ name = "Unity Version"; value = "${{ github.event.inputs.editor_version }}"; inline = $true },
               @{ name = "Editor Changeset"; value = "${{ github.event.inputs.editor_changeset }}"; inline = $false },
               @{ name = "Editor Modules"; value = "${{ github.event.inputs.editor_modules }}"; inline = $false },
+              @{ name = "Architecture"; value = "${{ github.event.inputs.architecture }}"; inline = $true },
               @{ name = "Workflow"; value = "${{ github.workflow }}"; inline = $true },
               @{ name = "Run Number"; value = "${{ github.run_number }}"; inline = $true },
               @{ name = "Commit"; value = "${{ github.sha }}"; inline = $false },
