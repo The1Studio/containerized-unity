@@ -69,41 +69,66 @@ jobs:
         if: always()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        shell: pwsh
+        shell: bash
         run: |
           # Determine build status from job context
-          $status = switch ('${{ job.status }}') {
-            'success' { 'Success' }
-            'failure' { 'Failed' }
-            'cancelled' { 'Cancelled' }
-            default { '${{ job.status }}' }
-          }
-          $tag = "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"
-          $embed = @{
-            title = "Build completed for Unity Editor Docker image!"
-            color = if ($status -eq "Success") { 3066993 } elseif ($status -eq "Failed") { 15158332 } else { 15844367 }
-            description = "Build and push completed for Unity Editor Docker image."
-            fields = @(
-              @{ name = "Build Status"; value = $status; inline = $false },
-              @{ name = "Image"; value = $tag; inline = $false },
-              @{ name = "Tag"; value = "${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"; inline = $true },
-              @{ name = "Base Tag"; value = "${{ github.event.inputs.base_tag }}"; inline = $true },
-              @{ name = "Hub Version"; value = "${{ github.event.inputs.hub_version }}"; inline = $true },
-              @{ name = "Unity Version"; value = "${{ github.event.inputs.editor_version }}"; inline = $true },
-              @{ name = "Editor Changeset"; value = "${{ github.event.inputs.editor_changeset }}"; inline = $false },
-              @{ name = "Editor Modules"; value = "${{ github.event.inputs.editor_modules }}"; inline = $false },
-              @{ name = "Architecture"; value = "${{ github.event.inputs.architecture }}"; inline = $true },
-              @{ name = "Workflow"; value = "${{ github.workflow }}"; inline = $true },
-              @{ name = "Run Number"; value = "${{ github.run_number }}"; inline = $true },
-              @{ name = "Commit"; value = "${{ github.sha }}"; inline = $false },
-              @{ name = "Triggered By"; value = "${{ github.actor }}"; inline = $true }
-            )
-          }
-          $payload = @{
-            content = '<@&961819174282350683>'
-            embeds = @($embed)
-          } | ConvertTo-Json -Depth 4
-          Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -Body $payload -ContentType 'application/json'
+          if [[ "${{ job.status }}" == "success" ]]; then
+            status="Success"
+            color=3066993
+          elif [[ "${{ job.status }}" == "failure" ]]; then
+            status="Failed"
+            color=15158332
+          elif [[ "${{ job.status }}" == "cancelled" ]]; then
+            status="Cancelled"
+            color=15844367
+          else
+            status="${{ job.status }}"
+            color=15844367
+          fi
+          tag="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"
+          payload=$(jq -n \
+            --arg title "Build completed for Unity Editor Docker image!" \
+            --arg desc "Build and push completed for Unity Editor Docker image." \
+            --arg status "$status" \
+            --arg tag "$tag" \
+            --arg tagval "${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}" \
+            --arg basetag "${{ github.event.inputs.base_tag }}" \
+            --arg hubver "${{ github.event.inputs.hub_version }}" \
+            --arg unityver "${{ github.event.inputs.editor_version }}" \
+            --arg changeset "${{ github.event.inputs.editor_changeset }}" \
+            --arg modules "${{ github.event.inputs.editor_modules }}" \
+            --arg arch "${{ github.event.inputs.architecture }}" \
+            --arg workflow "${{ github.workflow }}" \
+            --arg runnum "${{ github.run_number }}" \
+            --arg commit "${{ github.sha }}" \
+            --arg actor "${{ github.actor }}" \
+            --arg color "$color" \
+            '{
+              content: "<@&961819174282350683>",
+              embeds: [
+                {
+                  title: $title,
+                  color: ($color|tonumber),
+                  description: $desc,
+                  fields: [
+                    {name: "Build Status", value: $status, inline: false},
+                    {name: "Image", value: $tag, inline: false},
+                    {name: "Tag", value: $tagval, inline: true},
+                    {name: "Base Tag", value: $basetag, inline: true},
+                    {name: "Hub Version", value: $hubver, inline: true},
+                    {name: "Unity Version", value: $unityver, inline: true},
+                    {name: "Editor Changeset", value: $changeset, inline: false},
+                    {name: "Editor Modules", value: $modules, inline: false},
+                    {name: "Architecture", value: $arch, inline: true},
+                    {name: "Workflow", value: $workflow, inline: true},
+                    {name: "Run Number", value: $runnum, inline: true},
+                    {name: "Commit", value: $commit, inline: false},
+                    {name: "Triggered By", value: $actor, inline: true}
+                  ]
+                }
+              ]
+            }')
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK"
 # Replace <@&ROLE_ID> with your Discord role ID to tag the role.
 # Make sure to add DISCORD_WEBHOOK as a secret in your repository.
 # After this workflow completes, the editor image will be available as docker.io/USERNAME/containerized-unity-editor:EDITORVERSION
