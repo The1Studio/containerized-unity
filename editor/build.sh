@@ -20,9 +20,14 @@ KEYSTORE_ALIAS_NAME=${KEYSTORE_ALIAS_NAME:-}
 KEYSTORE_ALIAS_PASS=${KEYSTORE_ALIAS_PASS:-}
 
 # Parameters for iOS builds
-
+IOS_SIGNING_TEAM_ID=${IOS_SIGNING_TEAM_ID:-}
+IOS_TARGET_OS_VERSION=${IOS_TARGET_OS_VERSION:-}
 
 # Parameters for WebGL builds
+WEBGL_ORIENTATION=${WEBGL_ORIENTATION:-}
+FACEBOOK_APP_ID=${FACEBOOK_APP_ID:-}
+FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET:-}
+UPLOAD_TO_FACEBOOK=${UPLOAD_TO_FACEBOOK:-false}
 
 
 source /active_lic.sh
@@ -44,19 +49,36 @@ UNITY_CMD=(
     -scriptingDefineSymbols "${UNITY_SCRIPTING_DEFINE_SYMBOLS}"
 )
 
+# Common parameters for all platforms
 if [ "$DEVELOPMENT" = "true" ]; then
     UNITY_CMD+=( -development )
 fi
 if [ "$OPTIMIZE_SIZE" = "true" ]; then
     UNITY_CMD+=( -optimizeSize )
 fi
-if [ "$BUILD_APP_BUNDLE" = "true" ]; then
-    UNITY_CMD+=( -buildAppBundle )
-    [ -n "$KEYSTORE_NAME" ] && UNITY_CMD+=( -keyStoreFileName "$KEYSTORE_NAME" )
-    [ -n "$KEYSTORE_PASS" ] && UNITY_CMD+=( -keyStorePassword "$KEYSTORE_PASS" )
-    [ -n "$KEYSTORE_ALIAS_NAME" ] && UNITY_CMD+=( -keyStoreAliasName "$KEYSTORE_ALIAS_NAME" )
-    [ -n "$KEYSTORE_ALIAS_PASS" ] && UNITY_CMD+=( -keyStoreAliasPassword "$KEYSTORE_ALIAS_PASS" )
-fi
+
+# Platform-specific parameters
+case "$UNITY_BUILD_TARGET" in
+    "Android")
+        if [ "$BUILD_APP_BUNDLE" = "true" ]; then
+            UNITY_CMD+=( -buildAppBundle )
+            [ -n "$KEYSTORE_NAME" ] && UNITY_CMD+=( -keyStoreFileName "$KEYSTORE_NAME" )
+            [ -n "$KEYSTORE_PASS" ] && UNITY_CMD+=( -keyStorePassword "$KEYSTORE_PASS" )
+            [ -n "$KEYSTORE_ALIAS_NAME" ] && UNITY_CMD+=( -keyStoreAliasName "$KEYSTORE_ALIAS_NAME" )
+            [ -n "$KEYSTORE_ALIAS_PASS" ] && UNITY_CMD+=( -keyStoreAliasPassword "$KEYSTORE_ALIAS_PASS" )
+        fi
+        ;;
+    "iOS")
+        [ -n "$IOS_SIGNING_TEAM_ID" ] && UNITY_CMD+=( -iosSigningTeamId "$IOS_SIGNING_TEAM_ID" )
+        [ -n "$IOS_TARGET_OS_VERSION" ] && UNITY_CMD+=( -iosTargetOSVersion "$IOS_TARGET_OS_VERSION" )
+        ;;
+    "WebGL")
+        [ -n "$WEBGL_ORIENTATION" ] && UNITY_CMD+=( -webglOrientation "$WEBGL_ORIENTATION" )
+        [ -n "$FACEBOOK_APP_ID" ] && UNITY_CMD+=( -facebookAppId "$FACEBOOK_APP_ID" )
+        [ -n "$FACEBOOK_APP_SECRET" ] && UNITY_CMD+=( -facebookAppSecret "$FACEBOOK_APP_SECRET" )
+        [ "$UPLOAD_TO_FACEBOOK" = "true" ] && UNITY_CMD+=( -uploadToFacebook )
+        ;;
+esac
 
 "${UNITY_CMD[@]}"
 

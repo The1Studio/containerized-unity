@@ -69,29 +69,15 @@ jobs:
         if: always()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        shell: pwsh
         run: |
-          if [ "$GITHUB_JOB" = "build-editor" ]; then
-            if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
-              status="Retried"
-            elif [ "$GITHUB_RUN_NUMBER" -gt 1 ]; then
-              status="Retried"
-            elif [ "$GITHUB_RUN_ATTEMPT" -eq 1 ]; then
-              status="Success"
-            else
-              status="Success"
-            fi
-          else
-            status="Failed"
-          fi
-          if [ "${{ job.status }}" = "success" ]; then
-            status="Success"
-          elif [ "${{ job.status }}" = "failure" ]; then
-            status="Failed"
-          elif [ "${{ job.status }}" = "cancelled" ]; then
-            status="Cancelled"
-          else
-            status="${{ job.status }}"
-          fi
+          # Determine build status from job context
+          $status = switch ('${{ job.status }}') {
+            'success' { 'Success' }
+            'failure' { 'Failed' }
+            'cancelled' { 'Cancelled' }
+            default { '${{ job.status }}' }
+          }
           $tag = "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}"
           $embed = @{
             title = "Build completed for Unity Editor Docker image!"
