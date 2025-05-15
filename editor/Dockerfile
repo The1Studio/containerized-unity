@@ -81,7 +81,7 @@ RUN /bin/echo -e '#!/bin/bash\n\
     \n\
     if [ -d /usr/bin/unity-editor.d ] ; then\n\
     for i in /usr/bin/unity-editor.d/*.sh; do\n\
-    if [ -r $i]; then\n\
+    if [ -r $i ]; then\n\
     . $i\n\
     fi\n\
     done\n\
