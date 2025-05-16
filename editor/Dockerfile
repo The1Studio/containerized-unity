@@ -321,3 +321,10 @@ RUN echo "$version-$module" | grep -q -v '^2021.*linux-il2cpp' \
     lld \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+# Copy build and license scripts and set as entrypoint
+COPY build.sh /build.sh
+COPY active_lic.sh /active_lic.sh
+COPY return_lic.sh /return_lic.sh
+RUN chmod +x /build.sh /active_lic.sh /return_lic.sh
+ENTRYPOINT ["/build.sh"]
