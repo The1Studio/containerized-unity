@@ -77,7 +77,6 @@ jobs:
             version=${{ github.event.inputs.editor_version }}
             changeSet=${{ github.event.inputs.editor_changeset }}
             module=${{ github.event.inputs.editor_modules }}
-            architecture=${{ github.event.inputs.architecture }}
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
           push: true
