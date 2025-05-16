@@ -5,7 +5,7 @@ UNITY_PASSWORD=${UNITY_PASSWORD:-}
 
 # Return license
 unity-editor \
-    -logFile /dev/stdout \
+    -logFile /tmp/unity-return.log \
     -quit \
     -returnlicense \
     -username "$UNITY_EMAIL" \

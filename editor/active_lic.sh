@@ -28,7 +28,7 @@ if [[ -n "$UNITY_SERIAL" && -n "$UNITY_EMAIL" && -n "$UNITY_PASSWORD" ]]; then
   do
     # Activate license
     unity-editor \
-      -logFile /dev/stdout \
+      -logFile /tmp/unity-activate.log \
       -quit \
       -serial "$UNITY_SERIAL" \
       -username "$UNITY_EMAIL" \
