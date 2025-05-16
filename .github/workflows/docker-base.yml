@@ -7,6 +7,15 @@ on:
         description: 'Ubuntu version (e.g., 22.04)'
         required: true
         default: '22.04'
+      architecture:
+        description: 'Target architecture (x86_64, arm64, or both)'
+        required: true
+        default: 'x86_64'
+        type: choice
+        options:
+          - x86_64
+          - arm64
+          - both
 
 jobs:
   build-base:
@@ -28,12 +37,26 @@ jobs:
       - name: Set repository name to lowercase
         id: repo_name
         run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        
+      - name: Set platform based on input
+        id: platform
+        run: |
+          if [ "${{ github.event.inputs.architecture }}" = "both" ]; then
+            echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.architecture }}" = "arm64" ]; then
+            echo "platforms=linux/arm64" >> $GITHUB_OUTPUT
+          else
+            echo "platforms=linux/amd64" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and push base image
         uses: docker/build-push-action@v5
         with:
           context: ./base
           file: ./base/Dockerfile
+          platforms: ${{ steps.platform.outputs.platforms }}
+          build-args: |
+            version=${{ github.event.inputs.ubuntu_version }}
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-base:${{ github.event.inputs.ubuntu_version }}
           push: true
