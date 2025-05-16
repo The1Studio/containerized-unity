@@ -44,14 +44,7 @@ jobs:
 
       - name: Set platform based on input
         id: platform
-        run: |
-          if [ "${{ github.event.inputs.architecture }}" = "both" ]; then
-            echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.inputs.architecture }}" = "arm64" ]; then
-            echo "platforms=linux/arm64" >> $GITHUB_OUTPUT
-          else
-            echo "platforms=linux/amd64" >> $GITHUB_OUTPUT
-          fi
+        run: echo "platforms=${{ github.event.inputs.architecture == 'both' && 'linux/amd64,linux/arm64' || github.event.inputs.architecture == 'arm64' && 'linux/arm64' || 'linux/amd64' }}" >> $GITHUB_OUTPUT
 
       - name: Build and push hub image
         uses: docker/build-push-action@v5
