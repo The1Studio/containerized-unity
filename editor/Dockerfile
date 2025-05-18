@@ -326,5 +326,12 @@ RUN echo "$version-$module" | grep -q -v '^2021.*linux-il2cpp' \
 COPY build.sh /build.sh
 COPY active_lic.sh /active_lic.sh
 COPY return_lic.sh /return_lic.sh
-RUN chmod +x /build.sh /active_lic.sh /return_lic.sh
+
+# Ensure all scripts have Unix line endings
+RUN apt-get update && apt-get install -y dos2unix \
+    && dos2unix /build.sh /active_lic.sh /return_lic.sh \
+    && chmod +x /build.sh /active_lic.sh /return_lic.sh \
+    && apt-get remove -y dos2unix && apt-get autoremove -y && apt-get clean
+
 ENTRYPOINT ["/build.sh"]
+
