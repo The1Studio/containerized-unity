@@ -8,7 +8,7 @@ UNITY_SCRIPTING_BACKEND=${UNITY_SCRIPTING_BACKEND:-il2cpp}
 UNITY_SCRIPTING_DEFINE_SYMBOLS=${UNITY_SCRIPTING_DEFINE_SYMBOLS:-}
 UNITY_ADDRESSABLES_BUILD_PATH=${UNITY_ADDRESSABLES_BUILD_PATH:-/addressables}
 UNITY_ADDRESSABLES_LOAD_PATH=${UNITY_ADDRESSABLES_LOAD_PATH:-/addressables}
-UNITY_LOG_FILE=${UNITY_LOG_FILE:-/dev/stdout}
+UNITY_LOG_FILE=${UNITY_LOG_FILE:-/output/build.log}
 
 # Parameters for Android builds
 DEVELOPMENT=${DEVELOPMENT:-false}
@@ -28,6 +28,8 @@ WEBGL_ORIENTATION=${WEBGL_ORIENTATION:-}
 FACEBOOK_APP_ID=${FACEBOOK_APP_ID:-}
 FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET:-}
 UPLOAD_TO_FACEBOOK=${UPLOAD_TO_FACEBOOK:-false}
+
+export UNITY_LOG_FILE
 
 source /active_lic.sh
 
@@ -88,8 +90,10 @@ if [ $BUILD_EXIT_CODE -eq 0 ]; then
   echo "Build succeeded";
 else
   echo "Build failed, with exit code $BUILD_EXIT_CODE";
+  echo "See build log at: $UNITY_LOG_FILE"
 fi
 
-source /return_lic.sh
+echo "Build log saved to: $UNITY_LOG_FILE"
 
+source /return_lic.sh
 

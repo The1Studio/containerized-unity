@@ -4,7 +4,7 @@ UNITY_PASSWORD=${UNITY_PASSWORD:-}
 
 # Return license
 unity-editor \
-    -logFile /tmp/unity-return.log \
+    -logFile /output/return.log \
     -quit \
     -returnlicense \
     -username "$UNITY_EMAIL" \
@@ -17,9 +17,8 @@ UNITY_EXIT_CODE=$?
 # Check if UNITY_EXIT_CODE is 0
 if [[ $UNITY_EXIT_CODE -eq 0 ]]
 then
-  echo "Return successful"
+  echo "Return successful. Log: /output/return.log"
 else
-  echo "Return failed"
+  echo "Return failed. See return log at: /output/return.log"
 fi
-
 

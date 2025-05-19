@@ -26,7 +26,7 @@ if [[ -n "$UNITY_SERIAL" && -n "$UNITY_EMAIL" && -n "$UNITY_PASSWORD" ]]; then
   do
     # Activate license
     unity-editor \
-      -logFile /tmp/unity-activate.log \
+      -logFile /output/activate.log \
       -quit \
       -serial "$UNITY_SERIAL" \
       -username "$UNITY_EMAIL" \
@@ -58,8 +58,8 @@ elif [[ -n "$UNITY_LICENSING_SERVER" ]]; then
   # Custom Unity License Server
   #
   echo "Adding licensing server config"
-  /opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client --acquire-floating > license.txt #is this accessible in a env variable?
-  PARSEDFILE=$(grep -oP '\".*?\"' < license.txt | tr -d '"')
+  /opt/unity/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client --acquire-floating > /output/activate.log
+  PARSEDFILE=$(grep -oP '\".*?\"' < /output/activate.log | tr -d '"')
   export FLOATING_LICENSE
   FLOATING_LICENSE=$(sed -n 2p <<< "$PARSEDFILE")
   FLOATING_LICENSE_TIMEOUT=$(sed -n 4p <<< "$PARSEDFILE")
@@ -85,13 +85,13 @@ fi
 # Display information about the result
 if [ $UNITY_EXIT_CODE -eq 0 ]; then
   # Activation was a success
-  echo "Activation complete."
+  echo "Activation complete. Log: /output/activate.log"
 else
   # Activation failed so exit with the code from the license verification step
   echo "Unclassified error occured while trying to activate license."
   echo "Exit code was: $UNITY_EXIT_CODE"
+  echo "See activation log at: /output/activate.log"
   echo "::error ::There was an error while trying to activate the Unity license."
   exit $UNITY_EXIT_CODE
 fi
-
 
