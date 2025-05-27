@@ -322,16 +322,14 @@ RUN echo "$version-$module" | grep -q -v '^2021.*linux-il2cpp' \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy build and license scripts and set as entrypoint
-COPY build.sh /build.sh
-COPY active_lic.sh /active_lic.sh
-COPY return_lic.sh /return_lic.sh
+# Copy all step scripts and entrypoint, ensure Unix line endings and executable
+COPY steps/*.sh /steps/
+COPY entrypoint.sh /entrypoint.sh
 
-# Ensure all scripts have Unix line endings
 RUN apt-get update && apt-get install -y dos2unix \
-    && dos2unix /build.sh /active_lic.sh /return_lic.sh \
-    && chmod +x /build.sh /active_lic.sh /return_lic.sh \
+    && find /steps -type f -name "*.sh" -exec dos2unix {} \; \
+    && dos2unix /entrypoint.sh \
+    && chmod +x /steps/*.sh /entrypoint.sh \
     && apt-get remove -y dos2unix && apt-get autoremove -y && apt-get clean
 
-ENTRYPOINT ["/build.sh"]
-
+ENTRYPOINT ["/entrypoint.sh"]
