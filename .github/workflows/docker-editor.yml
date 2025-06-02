@@ -77,82 +77,16 @@ jobs:
 
       - name: Notify Discord
         if: always()
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        shell: bash
-        run: |
-          # Determine build status from job context
-          status="${{ job.status }}"
-          case "$status" in
-            "success")
-              color="3066993"
-              status="Success"
-              ;;
-            "failure")
-              color="15158332"
-              status="Failed"
-              ;;
-            "cancelled")
-              color="15844367"
-              status="Cancelled"
-              ;;
-            *)
-              color="15844367"
-              ;;
-          esac
-          
-          editor_version="${{ github.event.inputs.editor_version }}"
-          base_tag="${{ github.event.inputs.base_tag }}"
-          hub_version="${{ github.event.inputs.hub_version }}"
-          editor_changeset="${{ github.event.inputs.editor_changeset }}"
-          editor_modules="${{ github.event.inputs.editor_modules }}"
-          architecture="${{ github.event.inputs.architecture }}"
-          
-          payload=$(cat <<EOF
-          {
-            "embeds": [
-              {
-                "title": "Build ${status} for Unity Editor Docker image",
-                "color": ${color},
-                "description": "Build and push completed for Unity Editor Docker image.",
-                "fields": [
-                  {
-                    "name": "Image",
-                    "value": "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${editor_version}-${architecture}",
-                    "inline": false
-                  },
-                  {
-                    "name": "Base Tag",
-                    "value": "${base_tag}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Hub Version",
-                    "value": "${hub_version}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Unity Version",
-                    "value": "${editor_version}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Architecture",
-                    "value": "${architecture}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Editor Modules",
-                    "value": "${editor_modules}",
-                    "inline": false
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
-          )
-          
-          curl -H "Content-Type: application/json" -d "$payload" $DISCORD_WEBHOOK
+        uses: appleboy/discord-action@v1.2.0
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          message: |
+            Build ${{ job.status }} for Unity Editor Docker image
+            - **Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
+            - **Base Tag:** ${{ github.event.inputs.base_tag }}
+            - **Hub Version:** ${{ github.event.inputs.hub_version }}
+            - **Unity Version:** ${{ github.event.inputs.editor_version }}
+            - **Architecture:** ${{ github.event.inputs.architecture }}
+            - **Editor Modules:** ${{ github.event.inputs.editor_modules }}
 # After this workflow completes, the editor image will be available as docker.io/USERNAME/containerized-unity-editor:EDITORVERSION-ARCHITECTURE
 # Make sure the base and hub images exist before running this workflow.
