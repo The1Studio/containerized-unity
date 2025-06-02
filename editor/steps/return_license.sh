@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+UNITY_EMAIL=${UNITY_EMAIL:-}
+UNITY_PASSWORD=${UNITY_PASSWORD:-}
+
 if [[ -n "$UNITY_LICENSING_SERVER" ]]; then
   #
   # Return any floating license used.

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+UNITY_SERIAL=${UNITY_SERIAL:-}
+UNITY_EMAIL=${UNITY_EMAIL:-}
+UNITY_PASSWORD=${UNITY_PASSWORD:-}
+
 # if blankproject folder doesn't exist create it
 if [ ! -d "/BlankProject" ]; then
   mkdir /BlankProject

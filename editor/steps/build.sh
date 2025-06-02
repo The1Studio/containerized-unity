@@ -9,7 +9,7 @@ UNITY_SCRIPTING_BACKEND=${UNITY_SCRIPTING_BACKEND:-il2cpp}
 UNITY_SCRIPTING_DEFINE_SYMBOLS=${UNITY_SCRIPTING_DEFINE_SYMBOLS:-}
 UNITY_ADDRESSABLES_BUILD_PATH=${UNITY_ADDRESSABLES_BUILD_PATH:-/addressables}
 UNITY_ADDRESSABLES_LOAD_PATH=${UNITY_ADDRESSABLES_LOAD_PATH:-/addressables}
-UNITY_BUILD_LOG_FILE=${UNITY_BUILD_LOG_FILE:-/output/build.log}
+UNITY_LOG_FILE=${UNITY_LOG_FILE:-/output/build.log}
 
 # Parameters for Android builds
 DEVELOPMENT=${DEVELOPMENT:-false}
@@ -30,7 +30,7 @@ FACEBOOK_APP_ID=${FACEBOOK_APP_ID:-}
 FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET:-}
 UPLOAD_TO_FACEBOOK=${UPLOAD_TO_FACEBOOK:-false}
 
-export UNITY_BUILD_LOG_FILE
+export UNITY_LOG_FILE
 
 echo "Using project path \"$UNITY_PROJECT_PATH\"."
 echo "Using build name \"$BUILD_NAME\"."
@@ -51,7 +51,7 @@ UNITY_CMD=(
     -platforms "$UNITY_PLATFORMS" \
     -scriptingBackend "$UNITY_SCRIPTING_BACKEND" \
     -projectPath "$UNITY_PROJECT_PATH" \
-    -logFile /output/build.log \
+    -logFile "$UNITY_LOG_FILE" \
     -outputPath "$UNITY_OUTPUT_PATH" \
     -remoteAddressableBuildPath "$UNITY_ADDRESSABLES_BUILD_PATH" \
     -remoteAddressableLoadPath "$UNITY_ADDRESSABLES_LOAD_PATH" \
@@ -89,20 +89,16 @@ esac
 
 "${UNITY_CMD[@]}"
 
-# Copy the build log to the desired log file path
-if [ "/output/build.log" != "$UNITY_BUILD_LOG_FILE" ]; then
-  cp /output/build.log "$UNITY_BUILD_LOG_FILE"
-fi
 
 BUILD_EXIT_CODE=$?
 if [ $BUILD_EXIT_CODE -eq 0 ]; then
   echo "Build succeeded";
 else
   echo "Build failed, with exit code $BUILD_EXIT_CODE";
-  echo "See build log at: $UNITY_BUILD_LOG_FILE"
+  echo "See build log at: $UNITY_LOG_FILE"
 fi
 
-echo "Build log saved to: $UNITY_BUILD_LOG_FILE"
+echo "Build log saved to: $UNITY_LOG_FILE"
 
 if [[ -n "$CHOWN_FILES_TO" ]]; then
   echo "Changing ownership of files to $CHOWN_FILES_TO for $UNITY_OUTPUT_PATH and $UNITY_PROJECT_PATH"
@@ -116,3 +112,10 @@ if [[ "$UNITY_BUILD_TARGET" == "StandaloneOSX" ]]; then
   find "$OSX_EXECUTABLE_PATH" -type f -exec chmod +x {} \;
 fi
 ls -alh "$UNITY_OUTPUT_PATH"
+
+# Insert "-build" before the file extension of UNITY_LOG_FILE
+NEW_LOG_FILE="${UNITY_LOG_FILE%.*}-build.${UNITY_LOG_FILE##*.}"
+
+if [ "$UNITY_LOG_FILE" != "$NEW_LOG_FILE" ]; then
+  cp "$UNITY_LOG_FILE" "$NEW_LOG_FILE"
+fi
