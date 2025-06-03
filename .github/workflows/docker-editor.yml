@@ -74,6 +74,8 @@ jobs:
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Notify Discord
         if: always()
