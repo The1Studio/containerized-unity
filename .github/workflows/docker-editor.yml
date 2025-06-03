@@ -35,7 +35,7 @@ on:
 
 jobs:
   build-editor:
-    runs-on: self-hosted
+    runs-on: mkt
     permissions:
       contents: read
     steps:
