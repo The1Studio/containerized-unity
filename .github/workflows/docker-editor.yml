@@ -64,14 +64,14 @@ jobs:
       - name: Set platform based on input
         id: platform
         run: |
-          if [[ "${{ github.event.inputs.architecture }}" == "both" ]]; then
-            echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.inputs.architecture }}" == "arm64" ]]; then
-            echo "platforms=linux/arm64" >> $GITHUB_OUTPUT
-          else
-            echo "platforms=linux/amd64" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
+          if ($env:GITHUB_EVENT_INPUTS_ARCHITECTURE -eq "both") {
+            "platforms=linux/amd64,linux/arm64" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } elseif ($env:GITHUB_EVENT_INPUTS_ARCHITECTURE -eq "arm64") {
+            "platforms=linux/arm64" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "platforms=linux/amd64" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+        shell: pwsh
 
       - name: Build and push editor image
         uses: docker/build-push-action@v5
@@ -98,14 +98,9 @@ jobs:
 
       - name: Notify Discord
         if: always()
-        uses: appleboy/discord-action@v1.2.0
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
-          message: |
-            Build ${{ job.status }} for Unity Editor Docker image
-            - **Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
-            - **Base Tag:** ${{ github.event.inputs.base_tag }}
-            - **Hub Version:** ${{ github.event.inputs.hub_version }}
-            - **Unity Version:** ${{ github.event.inputs.editor_version }}
-            - **Architecture:** ${{ github.event.inputs.architecture }}
-            - **Editor Modules:** ${{ github.event.inputs.editor_modules }}
+        run: |
+          $body = @{
+            content = "Build $env:GITHUB_JOB_STATUS for Unity Editor Docker image`n- **Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}`n- **Base Tag:** ${{ github.event.inputs.base_tag }}`n- **Hub Version:** ${{ github.event.inputs.hub_version }}`n- **Unity Version:** ${{ github.event.inputs.editor_version }}`n- **Architecture:** ${{ github.event.inputs.architecture }}`n- **Editor Modules:** ${{ github.event.inputs.editor_modules }}"
+          } | ConvertTo-Json
+          Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -ContentType 'application/json' -Body $body
+        shell: pwsh
