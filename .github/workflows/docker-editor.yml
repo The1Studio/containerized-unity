@@ -32,18 +32,11 @@ on:
           - x86_64
           - arm64
           - both
-      runner:
-        description: 'Runner type (mkt or self-hosted)'
-        required: true
-        default: 'mkt'
-        type: choice
-        options:
-          - mkt
-          - self-hosted
 
 jobs:
   build-editor:
     runs-on: mkt
+    timeout-minutes: 1440 # 24 hours
     permissions:
       contents: read
     steps:
@@ -98,9 +91,22 @@ jobs:
 
       - name: Notify Discord
         if: always()
-        run: |
-          $body = @{
-            content = "Build $env:GITHUB_JOB_STATUS for Unity Editor Docker image`n- **Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}`n- **Base Tag:** ${{ github.event.inputs.base_tag }}`n- **Hub Version:** ${{ github.event.inputs.hub_version }}`n- **Unity Version:** ${{ github.event.inputs.editor_version }}`n- **Architecture:** ${{ github.event.inputs.architecture }}`n- **Editor Modules:** ${{ github.event.inputs.editor_modules }}"
-          } | ConvertTo-Json
-          Invoke-RestMethod -Uri "${{ secrets.DISCORD_WEBHOOK }}" -Method Post -ContentType 'application/json' -Body $body
-        shell: powershell
+        uses: appleboy/discord-action@v1.2.0
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Unity Editor CI
+          color: >-
+            ${{
+              job.status == 'success' && '#48f442' ||
+              job.status == 'failure' && '#ff0000' ||
+              job.status == 'cancelled' && '#ffcc00'
+            }}
+          message: |
+            **Unity Editor Docker Build**
+            Build status: `${{ job.status }}`
+            - **Image:** docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
+            - **Base Tag:** ${{ github.event.inputs.base_tag }}
+            - **Hub Version:** ${{ github.event.inputs.hub_version }}
+            - **Unity Version:** ${{ github.event.inputs.editor_version }}
+            - **Architecture:** ${{ github.event.inputs.architecture }}
+            - **Editor Modules:** ${{ github.event.inputs.editor_modules }}
