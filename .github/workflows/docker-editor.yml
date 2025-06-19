@@ -20,9 +20,14 @@ on:
         required: true
         default: '170d2541580d'
       editor_modules:
-        description: 'Unity Editor modules (space separated, e.g., android webgl)'
+        description: 'Unity Editor modules'
         required: true
-        default: 'android webgl ios'
+        type: choice
+        default: 'android'
+        options:
+          - android
+          - webgl
+          - ios
       architecture:
         description: 'Target architecture (x86_64, arm64, or both)'
         required: true
@@ -80,7 +85,7 @@ jobs:
             module=${{ github.event.inputs.editor_modules }}
             architecture=${{ github.event.inputs.architecture }}
           tags: |
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/containerized-unity-editor:${{ github.event.inputs.editor_version }}-${{ github.event.inputs.architecture }}-${{ github.event.inputs.editor_modules }}
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
