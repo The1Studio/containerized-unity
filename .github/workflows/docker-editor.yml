@@ -40,7 +40,7 @@ on:
 
 jobs:
   build-editor:
-    runs-on: mkt
+    runs-on: runners
     timeout-minutes: 1440
     permissions:
       contents: read
